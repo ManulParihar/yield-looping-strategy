@@ -10,6 +10,9 @@ import {Errors} from "./Errors.sol";
 /// @notice Aave Looping Strategy for wstETH/wETH pair
 contract YieldLooping is BaseStrategy {
 
+    event AssetPrice(address _asset, uint256 _value);
+    event FundsDeployed(uint256 _suppliedAmount, uint256 _receivedAmount);
+
     /// @notice ERC20 token address for wstETH
     /// @dev Lending token
     IERC20 public wstETH;
@@ -39,11 +42,11 @@ contract YieldLooping is BaseStrategy {
 
     /// @notice This is underlying logic which will be used for looping
     /// @dev Implements BaseStrategy._deployFunds
-    function _deployFunds(uint256 _amount) internal override returns (uint256 receivedAmount) {
+    function _deployFunds(uint256 _amount) internal override {
         require(_amount > 0, Errors.ZeroAmount());
 
         uint256 suppliedAmount = _amount;
-        receivedAmount = 0;
+        uint256 receivedAmount = 0;
 
         // TODO: Dynamically calculate MAX_LOOP length, 
         // can be efficiently calculated off-chain
@@ -64,6 +67,8 @@ contract YieldLooping is BaseStrategy {
             // update supply for next loop
             suppliedAmount = swappedAmount;
         }
+
+        emit FundsDeployed(suppliedAmount, receivedAmount);
     }
 
     /// @notice This function withdraws wstETH from the Aave
@@ -79,7 +84,7 @@ contract YieldLooping is BaseStrategy {
         return _totalValue();
     }
 
-    function _totalValue() internal view returns (uint256) {
+    function _totalValue() internal returns (uint256) {
         // Amount of wETH (supplied to Aave + wallet balance - debt)
 
         // Amount deposited in Aave
@@ -106,7 +111,7 @@ contract YieldLooping is BaseStrategy {
     }
 
     /// @notice Calculates the rate of ynLoopWstETH vault token
-    function getVaultRate() external view returns (uin256) {
+    function getVaultRate() external returns (uint256) {
         uint256 totalSupply = IERC20(address(this)).totalSupply();
 
         if(totalSupply == 0) {
@@ -120,7 +125,7 @@ contract YieldLooping is BaseStrategy {
     /// @dev This function calculates the borrow amount based on hardcoded LTV (Loan-To-Value) of 70%
     /// Amount of wETH to be borrowed/received after lending/supplying wstETH
     /// TODO: Use Aave's LTV
-    function _calculateBorrow(uint256 _amount) internal view returns (uint256) {
+    function _calculateBorrow(uint256 _amount) internal pure returns (uint256) {
         return (_amount * 70) / 100;
     }
 
@@ -129,7 +134,7 @@ contract YieldLooping is BaseStrategy {
     /// TODO: Use Aave's swap router
     function _swap(
         uint256 _amount
-    ) internal returns (uint256) {
+    ) internal pure returns (uint256) {
         // Check if Aave requires approval before swap
         // wETH.approve(address(aavePool), _amount);
         return _amount;
@@ -138,7 +143,9 @@ contract YieldLooping is BaseStrategy {
     /// @notice Gets the price for an asset
     /// @dev For simplicity, wstETH price is hardcoded
     /// TODO: Use Oracle to fetch price
-    function _getAssetPrice() internal view returns (uint256) {
-        return 0.93 ether;
+    function _getAssetPrice(address _asset) internal returns (uint256) {
+        uint256 assetPrice = 0.93 ether;
+        emit AssetPrice(_asset, assetPrice);
+        return assetPrice;
     }
 }
