@@ -66,7 +66,7 @@ contract YieldLooping is BaseStrategy {
 
     /// @notice This calculates the total value of wETH in holding
     /// @dev Implements BaseStrategy._harvestAndReport
-    function _harvestAndReport() internal override {
+    function _harvestAndReport() internal override returns (uint256) {
         return _totalValue();
     }
 
@@ -80,7 +80,8 @@ contract YieldLooping is BaseStrategy {
         uint256 unusedWstETHBalance = wstETH.balanceOf(address(this));
 
         if(unusedWstETHBalance > 0) {
-            uint256 wstETHPrice = oracle.getAssetPrice(address(wstETH));
+            // TODO: add oracle to fetch wstETH price
+            uint256 wstETHPrice = _getAssetPrice(address(wstETH));
             // Value of wstETH (in terms of ETH) present in this vault
             uint256 wstETHValue = (unusedWstETHBalance * wstETHPrice) / 1e18;
             // collaterlBase is already priced in ETH.
@@ -93,6 +94,18 @@ contract YieldLooping is BaseStrategy {
         } else {
             return 0;
         }
+    }
+
+    /// @notice Calculates the rate of ynLoopWstETH vault token
+    function calculateRate() external view returns (uin256) {
+        uint256 totalSupply = IERC20(address(this)).totalSupply();
+
+        if(totalSupply == 0) {
+            return 0;
+        }
+        
+        // _totalValue is the value this vault holds
+        return (_totalValue() * 1e18) / totalSupply;
     }
 
     /// @dev This function calculates the borrow amount based on hardcoded LTV (Loan-To-Value) of 70%
@@ -112,9 +125,11 @@ contract YieldLooping is BaseStrategy {
     }
 
     /// @notice Gets the price for an asset
-    /// @dev For simplicity, this function assumes 1 wstETH = 1 ETH
+    /// @dev For simplicity, wstETH price is hardcoded
     /// TODO: Use Oracle to fetch price
     function _getAssetPrice() internal returns (uint256) {
-        return 1 ether;
+        return 0.93 ether;
     }
+
+    //TODO: add rate 
 }
