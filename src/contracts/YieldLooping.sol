@@ -68,7 +68,7 @@ contract YieldLooping is BaseStrategy {
 
     /// @notice This function withdraws wstETH from the Aave
     /// @dev Implements BaseStrategy._freeFunds
-    function _freeFunds(_amount) internal override {
+    function _freeFunds(uint256 _amount) internal override {
         require(_amount > 0, Errors.ZeroAmount());
         aavePool.withdraw(address(wstETH), _amount, address(this));
     }
@@ -130,14 +130,15 @@ contract YieldLooping is BaseStrategy {
     function _swap(
         uint256 _amount
     ) internal returns (uint256) {
-        wETH.approve(address(aavePool), _amount);
+        // Check if Aave requires approval before swap
+        // wETH.approve(address(aavePool), _amount);
         return _amount;
     }
 
     /// @notice Gets the price for an asset
     /// @dev For simplicity, wstETH price is hardcoded
     /// TODO: Use Oracle to fetch price
-    function _getAssetPrice() internal returns (uint256) {
+    function _getAssetPrice() internal view returns (uint256) {
         return 0.93 ether;
     }
 }
