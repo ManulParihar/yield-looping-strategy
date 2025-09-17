@@ -2,13 +2,14 @@
 pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/src/Test.sol";
-import {YieldLooping} from "../src/contracts/YieldLooping.sol";
+// import {YieldLooping} from "../src/contracts/YieldLooping.sol";
 import {MockERC20} from "./mock/MockERC20.sol";
 import {MockAavePool} from "./mock/MockAavePool.sol";
+import {MockYieldLooping} from "./mock/MockYieldLooping.sol";
 import {IERC20} from "openzeppelin-contracts/token/ERC20/IERC20.sol";
 
 contract YieldLoopingTest is Test {
-    YieldLooping public strategy;
+    MockYieldLooping public strategy;
     MockERC20 public wstETH;
     MockERC20 public wETH;
     MockAavePool public aavePool;
@@ -20,7 +21,7 @@ contract YieldLoopingTest is Test {
         aavePool = new MockAavePool(address(wstETH), address(wETH));
 
         // Deploy strategy
-        strategy = new YieldLooping(
+        strategy = new MockYieldLooping(
             address(wstETH),
             address(wETH),
             address(aavePool)
@@ -51,5 +52,34 @@ contract YieldLoopingTest is Test {
 
         assertApproxEqAbs(actualCollateral, expectedCollateral, 0.01 ether);
         assertApproxEqAbs(actualDebt, expectedDebt, 0.01 ether);
+    }
+
+    function testTotalValue() public {
+        uint256 depositAmount = 10 ether;
+
+        vm.prank(address(strategy));
+        strategy.deployFunds(depositAmount);
+
+        vm.prank(address(strategy));
+        uint256 total = strategy.totalValue();
+
+        uint256 collateral;
+        uint256 debt;
+        (collateral, debt,,,,) = aavePool.getUserAccountData(address(strategy));
+
+        uint256 unusedBalance = wstETH.balanceOf(address(strategy));
+        uint256 wstETHPrice = strategy.getAssetPrice(address(wstETH));
+        uint256 wstETHValue = (unusedBalance * wstETHPrice) / 1e18;
+
+        collateral += wstETHValue;
+
+        uint256 expectedTotal;
+        if(collateral > debt) {
+            expectedTotal = collateral - debt;
+        } else {
+            expectedTotal = 0;
+        }
+
+        assertApproxEqAbs(total, expectedTotal, 1e16);
     }
 }
