@@ -21,6 +21,8 @@ contract YieldLooping is BaseStrategy {
     /// @notice Aave pool address
     IAavePool public aavePool;
 
+    uint256 public constant MAX_LOOP = 3;
+
     constructor(
         address _wstETH,
         address _wETH,
@@ -33,10 +35,6 @@ contract YieldLooping is BaseStrategy {
         wstETH = IERC20(_wstETH);
         wETH = IERC20(_wETH);
         aavePool = IAavePool(_aavePool);
-
-        // approve spending of wstETH and wETH
-        wstETH.approve(address(aavePool), type(uint256).max);
-        wETH.approve(address(aavePool), type(uint256).max);
     }
 
     /// @notice This is underlying logic which will be used for looping
@@ -44,17 +42,26 @@ contract YieldLooping is BaseStrategy {
     function _deployFunds(uint256 _amount) internal override returns (uint256 receivedAmount) {
         require(_amount > 0, Errors.ZeroAmount());
 
-        // Approve spending of wstETH by this vault
-        wstETH.approve(address(aavePool), _amount);
-        // Send wstETH to Aave
-        aavePool.supply(address(wstETH), _amount, address(this), 0);
+        uint256 suppliedAmount = _amount;
+        receivedAmount = 0;
 
-        uint256 borrowAmount = _calculateBorrow(_amount);
-        // interestRateMode is set to 1 (for stable rate of borrowing)
-        aavePool.borrow(address(wETH), borrowAmount, 1, 0, address(this));
+        for(uint256 i=0; i<MAX_LOOP; ++i) {
+            // Approve spending of wstETH by this vault
+            wstETH.approve(address(aavePool), suppliedAmount);
+            // Send wstETH to Aave
+            aavePool.supply(address(wstETH), suppliedAmount, address(this), 0);
 
-        // Swap wETH to wstETH for next loop
-        receivedAmount = _swap(borrowAmount);
+            uint256 borrowAmount = _calculateBorrow(suppliedAmount);
+            // interestRateMode is set to 1 (for stable rate of borrowing)
+            aavePool.borrow(address(wETH), borrowAmount, 1, 0, address(this));
+
+            // Swap wETH to wstETH for next loop
+            uint256 swappedAmount = _swap(borrowAmount);
+
+            receivedAmount += swappedAmount;
+            // update supply for next loop
+            suppliedAmount = swappedAmount;
+        }
     }
 
     /// @notice This function withdraws wstETH from the Aave
@@ -121,6 +128,7 @@ contract YieldLooping is BaseStrategy {
     function _swap(
         uint256 _amount
     ) internal returns (uint256) {
+        wETH.approve(address(aavePool), _amount);
         return _amount;
     }
 
