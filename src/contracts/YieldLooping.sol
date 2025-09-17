@@ -112,7 +112,8 @@ contract YieldLooping is BaseStrategy {
 
     /// @notice Calculates the rate of ynLoopWstETH vault token
     function getVaultRate() external returns (uint256) {
-        uint256 totalSupply = IERC20(address(this)).totalSupply();
+        // BaseStrategy deployes the token as an immutable ERC20
+        uint256 totalSupply = asset.totalSupply();
 
         if(totalSupply == 0) {
             return 0;

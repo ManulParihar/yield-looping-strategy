@@ -2,7 +2,6 @@
 pragma solidity ^0.8.18;
 
 import {Test} from "forge-std/src/Test.sol";
-// import {YieldLooping} from "../src/contracts/YieldLooping.sol";
 import {MockERC20} from "./mock/MockERC20.sol";
 import {MockAavePool} from "./mock/MockAavePool.sol";
 import {MockYieldLooping} from "./mock/MockYieldLooping.sol";
@@ -35,7 +34,6 @@ contract YieldLoopingTest is Test {
     function testDeployFundsLoop() public {
         uint256 depositAmount = 10 ether;
 
-        // Call deployFunds via a prank so msg.sender == strategy
         vm.prank(address(strategy));
         strategy.deployFunds(depositAmount);
 
