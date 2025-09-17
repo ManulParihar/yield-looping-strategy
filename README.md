@@ -13,7 +13,7 @@ The YieldLooping.sol smart contract inherits BaseStrategy from Yearn's tokenized
 
 ## Tests
 `forge test`
->> All the test files including the mock contracts are present inside the `/src/test/` folder.  
+> All the test files including the mock contracts are present inside the `/test/` folder.  
 
 ## Enhancements
 If given more time to enhance the functionalities, following enhancements could be made:
