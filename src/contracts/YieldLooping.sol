@@ -45,6 +45,8 @@ contract YieldLooping is BaseStrategy {
         uint256 suppliedAmount = _amount;
         receivedAmount = 0;
 
+        // TODO: Dynamically calculate MAX_LOOP length, 
+        // can be efficiently calculated off-chain
         for(uint256 i=0; i<MAX_LOOP; ++i) {
             // Approve spending of wstETH by this vault
             wstETH.approve(address(aavePool), suppliedAmount);
