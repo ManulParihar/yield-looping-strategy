@@ -1,0 +1,7 @@
+forge-std/=lib/forge-std/
+openzeppelin-contracts/=lib/tokenized-strategy/lib/openzeppelin-contracts/contracts/
+tokenized-strategy/=lib/tokenized-strategy/src/
+@openzeppelin/=lib/tokenized-strategy/lib/openzeppelin-contracts/
+ds-test/=lib/tokenized-strategy/lib/forge-std/lib/ds-test/src/
+erc4626-tests/=lib/tokenized-strategy/lib/erc4626-tests/
+openzeppelin/=lib/tokenized-strategy/lib/openzeppelin-contracts/contracts/
