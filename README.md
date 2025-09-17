@@ -3,10 +3,17 @@ The yield looping strategy is a looping strategy built on ERC-4626 vault and use
 The YieldLooping.sol smart contract inherits BaseStrategy from Yearn's tokenized-strategy. BaseStrategy is an abstract ERC-4626 compliant vault which requires 3 main functions to be defined - `_deployFunds`, `_freeFunds`, `_harvestAndReport`.  
 
 ## Functions
-* *_deployFunds* - Deploys funds present in the vault to Aave. The DAO can decide when to push funds to this strategy and when to use the funds. The function implements the looping strategy with max loop length set to 3. The maximum length of loop can be calculated off-chain to save some computational cost.  
-* *_freeFunds* - Withdraws wstETH from Aave. This again cann be decided by the DAO.  
-* *_harvestAndReport* - This function calculates and returns the total rewards accrued. Currently it returns total rewards calculated by `_totalValue` function, but more functionalities can be added.  
-* *getVaultRate* - Returns the rate for vault token ("ynLoopWstETH").  
+* `_deployFunds` - Deploys funds present in the vault to Aave. The DAO can decide when to push funds to this strategy and when to use the funds. The function implements the looping strategy with max loop length set to 3. The maximum length of loop can be calculated off-chain to save some computational cost.  
+* `_freeFunds` - Withdraws wstETH from Aave. This again cann be decided by the DAO.  
+* `_harvestAndReport` - This function calculates and returns the total rewards accrued. Currently it returns total rewards calculated by `_totalValue` function, but more functionalities can be added.  
+* `getVaultRate` - Returns the rate for vault token ("ynLoopWstETH").  
+
+## Installation
+`forge build`
+
+## Tests
+`forge test`
+>> All the test files including the mock contracts are present inside the `/src/test/` folder.  
 
 ## Enhancements
 If given more time to enhance the functionalities, following enhancements could be made:
